@@ -11,7 +11,7 @@ LLMOps Course on Databricks
 
 - Every week we set up a deliverable, and you implement it with your own dataset.
 - To submit the deliverable, create a feature branch in that repository, and a PR to main branch. The code can be merged after we review & approve & CI pipeline runs successfully.
-- The deliverables can be submitted with a delay (for example, lecture 1 & 2 together), but we expect you to finish all assignments for the course before the demo day.
+- The deliverables can be submitted with a delay (for example, lecture 1 & 2 together), but we expect you to finish all assignments for the course before the demo day. OK.
 
 
 ## Set up your environment
