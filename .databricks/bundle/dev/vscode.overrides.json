@@ -1,1 +1,5 @@
-{}
+{
+  "authProfile": "llmops-login",
+  "serverless": true,
+  "useClusterOverride": false
+}

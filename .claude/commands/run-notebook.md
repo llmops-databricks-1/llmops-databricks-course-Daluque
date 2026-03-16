@@ -83,6 +83,7 @@ databricks bundle deploy
 Run:
 ```bash
 databricks bundle run <resource_key>
+#databricks bundle run hello_world_job
 ```
 
 Where `<resource_key>` is the derived key from step 1.
