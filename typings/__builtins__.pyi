@@ -1,5 +1,5 @@
 
-from databricks.sdk.runtime import *
+from databricks.sdk.runtime import dbutils
 from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import udf as U
 from pyspark.sql.context import SQLContext
@@ -12,7 +12,7 @@ sql = sqlContext.sql
 table = sqlContext.table
 getArgument = dbutils.widgets.getArgument
 
-def displayHTML(html): ...
+def displayHTML(html: str) -> None: ...
 
-def display(input=None, *args, **kwargs): ...
+def display(input=None, *args, **kwargs) -> None: ...
 
