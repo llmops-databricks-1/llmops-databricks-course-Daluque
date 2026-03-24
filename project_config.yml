@@ -10,6 +10,9 @@ dev:
   warehouse_id: f5ee17e6049d7cfb
   vector_search_endpoint: llmops_course_vs_endpoint
   genie_space_id: 01f11f39d2b2132090010f12ee4963d8
+  # List of arXiv categories: https://arxiv.org/category_taxonomy
+  arxiv_query: "cat:cs.LG AND {{time}}"
+  max_pdf_files: 1
 
 # Acceptance/Staging environment
 acc:
@@ -21,6 +24,8 @@ acc:
   warehouse_id: 7077f4cb0e616c62
   vector_search_endpoint: llmops_course_vs_endpoint
   genie_space_id: 01f113061bf41578baff744a41bd9ab0
+  arxiv_query: "cat:cs.LG AND {{time}}"
+  max_pdf_files: 5
 
 # Production environment
 prd:
@@ -32,6 +37,8 @@ prd:
   warehouse_id: 7077f4cb0e616c62
   vector_search_endpoint: llmops_course_vs_endpoint
   genie_space_id: 01f113061bf41578baff744a41bd9ab0
+  arxiv_query: "cat:cs.LG AND {{time}}"
+  max_pdf_files: 5
 
 # Model configuration
 model_config:

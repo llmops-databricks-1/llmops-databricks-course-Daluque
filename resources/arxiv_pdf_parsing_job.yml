@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    arxiv_pdf_parsing_job:
+      name: arxiv_pdf_parsing
+      tags:
+        project_name: "arxiv-curator"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: arxiv_pdf_parsing
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/2.2_pdf_parsing_ai_parse.py
+            base_parameters:
+              env: ${bundle.target}
+              git_sha: "${var.git_sha}"
+              run_id: "{{job.run_id}}"

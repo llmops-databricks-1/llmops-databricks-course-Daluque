@@ -18,6 +18,12 @@ class ProjectConfig(BaseModel):
     embedding_endpoint: str = Field(..., description="Embedding endpoint name")
     warehouse_id: str = Field(..., description="Warehouse ID")
     vector_search_endpoint: str = Field(..., description="Vector search endpoint name")
+    arxiv_query: str = Field(
+        "cat:cs.LG AND {{time}}", description="ArXiv query to fetch papers"
+    )
+    max_pdf_files: int = Field(
+        5, description="Maximum number of PDF files to process per query"
+    )
     genie_space_id: str | None = Field(
         None, description="Genie space ID for MCP integration"
     )
