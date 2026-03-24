@@ -77,5 +77,9 @@ ignore = [
     "ANN204"
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*.py" = ["E402", "F821"]
+"typings/*.pyi" = ["F821"]
+
 [tool.ruff.format]
 indent-style = "space"

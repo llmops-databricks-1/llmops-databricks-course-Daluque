@@ -57,12 +57,8 @@ class DataProcessor:
         self.volume = config.volume
         self.max_pdf_files = config.max_pdf_files
 
-        self.start = (
-                datetime.now(UTC) - timedelta(days=5)
-            ).strftime("%Y%m%d%H%M")
-        self.end = datetime.now(UTC).strftime(
-            "%Y%m%d%H%M"
-        )
+        self.start = (datetime.now(UTC) - timedelta(days=5)).strftime("%Y%m%d%H%M")
+        self.end = datetime.now(UTC).strftime("%Y%m%d%H%M")
         self.pdf_dir = f"/Volumes/{self.catalog}/{self.schema}/{self.volume}/{self.end}"
         os.makedirs(self.pdf_dir, exist_ok=True)
         self.papers_table = f"{self.catalog}.{self.schema}.arxiv_papers"
@@ -90,16 +86,11 @@ class DataProcessor:
                     f"arxiv_papers table exists but no processed timestamp found. "
                     f"Starting from 10 days ago: {start}"
                 )
-            logger.info(
-                f"Found existing arxiv_papers table. Starting from: {start}"
-            )
+            logger.info(f"Found existing arxiv_papers table. Starting from: {start}")
         else:
-            start = time.strftime(
-                "%Y%m%d%H%M", time.gmtime(time.time() - 24 * 3600 * 3)
-            )
+            start = time.strftime("%Y%m%d%H%M", time.gmtime(time.time() - 24 * 3600 * 3))
             logger.info(
-                f"No existing arxiv_papers table. "
-                f"Starting from 3 days ago: {start}"
+                f"No existing arxiv_papers table. Starting from 3 days ago: {start}"
             )
         return start
 
@@ -114,12 +105,15 @@ class DataProcessor:
             List of paper metadata dictionaries if papers were downloaded,
             otherwise None
         """
-        #start = self._get_range_start()
+        # start = self._get_range_start()
 
         # Search for papers in arxiv
         client = arxiv.Client()
         search = arxiv.Search(
-            query=(self.arxiv_query).replace("{{time}}", f"submittedDate:[{self.start} TO {self.end}]")
+            query=(self.arxiv_query).replace(
+                "{{time}}",
+                f"submittedDate:[{self.start} TO {self.end}]",
+            )
         )
         papers = client.results(search)
 
@@ -129,36 +123,27 @@ class DataProcessor:
         for loop_var, paper in enumerate(papers, start=1):
             paper_id = paper.get_short_id()
             try:
-                paper.download_pdf(
-                    dirpath=self.pdf_dir, filename=f"{paper_id}.pdf"
-                )
+                paper.download_pdf(dirpath=self.pdf_dir, filename=f"{paper_id}.pdf")
                 # Collect metadata
                 records.append(
                     {
                         "arxiv_id": paper_id,
                         "title": paper.title,
-                        "authors": [
-                            author.name for author in paper.authors
-                        ],
+                        "authors": [author.name for author in paper.authors],
                         "summary": paper.summary,
                         "pdf_url": paper.pdf_url,
-                        "published": int(
-                            paper.published.strftime("%Y%m%d%H%M")
-                        ),
+                        "published": int(paper.published.strftime("%Y%m%d%H%M")),
                         "processed": int(self.end),
                         "volume_path": f"{self.pdf_dir}/{paper_id}.pdf",
                     }
                 )
-                #break
+                # break
             except Exception:
-                logger.warning(
-                    f"Paper {paper_id} was not successfully processed."
-                )
+                logger.warning(f"Paper {paper_id} was not successfully processed.")
             if loop_var >= self.max_pdf_files:
                 break
             # Avoid hitting API rate limits
             time.sleep(3)
-
 
         # Only process if we have records
         if len(records) == 0:
@@ -181,14 +166,12 @@ class DataProcessor:
             ]
         )
 
-        metadata_df = self.spark.createDataFrame(
-            records, schema=schema).withColumn(
+        metadata_df = self.spark.createDataFrame(records, schema=schema).withColumn(
             "ingest_ts", current_timestamp()
         )
 
         # Create table if it doesn't exist
-        metadata_df.write.format("delta").mode("ignore").saveAsTable(
-            self.papers_table)
+        metadata_df.write.format("delta").mode("ignore").saveAsTable(self.papers_table)
 
         # MERGE to avoid duplicates based on arxiv_id
         metadata_df.createOrReplaceTempView("new_papers")
@@ -205,9 +188,7 @@ class DataProcessor:
                 source.processed, source.volume_path
             )
         """)
-        logger.info(
-            f"Merged {len(records)} paper records into {self.papers_table}"
-        )
+        logger.info(f"Merged {len(records)} paper records into {self.papers_table}")
         return records
 
     def parse_pdfs_with_ai(self) -> None:
@@ -236,9 +217,7 @@ class DataProcessor:
             )
         """)
 
-        logger.info(
-            f"Parsed PDFs from {self.pdf_dir} and saved to {self.parsed_table}"
-        )
+        logger.info(f"Parsed PDFs from {self.pdf_dir} and saved to {self.parsed_table}")
 
     @staticmethod
     def _extract_chunks(parsed_content_json: str) -> list[tuple[str, str]]:
@@ -308,9 +287,7 @@ class DataProcessor:
             f"{self.parsed_table} for end date {self.end}"
         )
 
-        df = self.spark.table(self.parsed_table).where(
-            f"processed = {self.end}"
-        )
+        df = self.spark.table(self.parsed_table).where(f"processed = {self.end}")
 
         # Define schema for the extracted chunks
         chunk_schema = ArrayType(
@@ -339,17 +316,13 @@ class DataProcessor:
         # Create the transformed dataframe
         chunks_df = (
             df.withColumn("arxiv_id", extract_paper_id_udf(col("path")))
-            .withColumn(
-                "chunks", extract_chunks_udf(col("parsed_content"))
-            )
+            .withColumn("chunks", extract_chunks_udf(col("parsed_content")))
             .withColumn("chunk", explode(col("chunks")))
             .select(
                 col("arxiv_id"),
                 col("chunk.chunk_id").alias("chunk_id"),
                 clean_chunk_udf(col("chunk.content")).alias("text"),
-                concat_ws("_", col("arxiv_id"), col("chunk.chunk_id")).alias(
-                    "id"
-                ),
+                concat_ws("_", col("arxiv_id"), col("chunk.chunk_id")).alias("id"),
             )
             .join(metadata_df, "arxiv_id", "left")
         )
