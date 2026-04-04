@@ -1,5 +1,6 @@
 {
-  "authProfile": "llmops-login",
-  "serverless": true,
-  "useClusterOverride": false
+  "authProfile": "token-dev",
+  "serverless": false,
+  "useClusterOverride": false,
+  "clusterId": "0109-145519-eafl5n28"
 }

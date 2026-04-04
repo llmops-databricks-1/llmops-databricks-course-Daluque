@@ -2,11 +2,11 @@
 name = "arxiv-curator"
 dynamic = ["version"]
 description = "Arxiv Curator - Shared utilities for LLMOps Course on Databricks"
-requires-python = ">=3.12, <3.13"
+requires-python = ">=3.10, <3.11"
 dependencies = [
     "cffi==1.17.1",
     "cloudpickle==3.1.1",
-    "numpy==2.4.0",
+    "numpy",
     "pandas==2.3.0",
     "pyarrow==22.0.0",
     "databricks-sdk==0.85.0",
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["databricks-connect>=17.0, <18",
+dev = ["databricks-connect",
        "ipykernel>=6.29.5, <7",
        "pip>=25.0.1, <26",
        "pre-commit>=4.1.0, <5"]
