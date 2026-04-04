@@ -1,12 +1,12 @@
 [project]
-name = "llmops-databricks-course-Daluque"
+name = "arxiv-curator"
 dynamic = ["version"]
-description = "llmops-databricks-course-Daluque - LLMOps Course on Databricks"
-requires-python = ">=3.12, <3.13"
+description = "Arxiv Curator - Shared utilities for LLMOps Course on Databricks"
+requires-python = ">=3.10, <3.11"
 dependencies = [
     "cffi==1.17.1",
     "cloudpickle==3.1.1",
-    "numpy==2.4.0",
+    "numpy",
     "pandas==2.3.0",
     "pyarrow==22.0.0",
     "databricks-sdk==0.85.0",
@@ -27,28 +27,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["databricks-connect>=17.0, <18",
+dev = ["databricks-connect",
        "ipykernel>=6.29.5, <7",
        "pip>=25.0.1, <26",
-       "pre-commit>=4.1.0, <5",
-       "claudetracing>=0.2.0, <1",]
+       "pre-commit>=4.1.0, <5"]
 
 ci = ["pre-commit>=4.1.0, <5",
       "pytest>=8.3.4, <9"]
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-"your_custom_package" = ["../../../project_config.yml"]
-
 [build-system]
-requires = ["setuptools>=72.0"]
+requires = [
+  "setuptools>=72.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["your_custom_package*"]
+where =["src"]
+include = ["arxiv_curator*"]
 
 [tool.setuptools.dynamic]
 version = { file = "version.txt" }
@@ -61,6 +55,7 @@ pythonpath = ["."]
 [tool.ruff]
 line-length = 90
 
+[tool.ruff.lint]
 select = [
     "F",    # pyflakes rules
     "E",    # pycodestyle error rules
@@ -73,17 +68,18 @@ select = [
     "C",    # pylint convention rules
     "ANN"   # flake8-annotations rules
 ]
-
 ignore = [
     "D107",   # Missing docstring in `__init__`
     "D203",   # incorrect-blank-line-before-class
     "D213",   # multi-line-summary-second-line
     "C901",   # too complex
     "ERA001", # commented out code
-    "ANN204",
-    "ANN102",
-    "ANN101"
+    "ANN204"
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*.py" = ["E402", "F821"]
+"typings/*.pyi" = ["F821"]
 
 [tool.ruff.format]
 indent-style = "space"
