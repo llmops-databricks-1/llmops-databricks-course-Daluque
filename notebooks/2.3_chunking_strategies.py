@@ -16,7 +16,8 @@
 # MAGIC
 # MAGIC **Chunking** is the process of breaking documents into smaller pieces for:
 # MAGIC
-# MAGIC 1. **Embedding Generation**: Most embedding models have token limits (512-8192 tokens)
+# MAGIC 1. **Embedding Generation**: Most embedding models have
+# MAGIC    token limits (512-8192 tokens)
 # MAGIC 2. **Retrieval Precision**: Smaller chunks = more precise retrieval
 # MAGIC 3. **Context Window**: LLMs have limited context windows
 # MAGIC 4. **Cost Optimization**: Fewer tokens = lower costs
@@ -40,11 +41,12 @@
 
 import re
 
-from arxiv_curator.config import get_env, load_config
 from loguru import logger
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.functions import col
+
+from arxiv_curator.config import get_env, load_config
 
 # COMMAND ----------
 
@@ -118,7 +120,7 @@ chunk_stats = chunks_df.select(
     F.avg(F.length(col("text"))).alias("avg_length"),
     F.min(F.length(col("text"))).alias("min_length"),
     F.max(F.length(col("text"))).alias("max_length"),
-    F.count("*").alias("total_chunks")
+    F.count("*").alias("total_chunks"),
 ).collect()[0]
 
 logger.info("Chunk Statistics:")
@@ -132,7 +134,8 @@ logger.info(f"  Max length: {chunk_stats['max_length']} characters")
 # MAGIC %md
 # MAGIC ## 5. Alternative Chunking Strategies
 # MAGIC
-# MAGIC While AI Parse Documents provides intelligent chunking, let's explore other strategies:
+# MAGIC While AI Parse Documents provides intelligent chunking,
+# MAGIC let's explore other strategies:
 
 # COMMAND ----------
 
@@ -143,14 +146,15 @@ logger.info(f"  Max length: {chunk_stats['max_length']} characters")
 
 # COMMAND ----------
 
+
 def fixed_size_chunking(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
     """Create fixed-size chunks with overlap.
-    
+
     Args:
         text: Text to chunk
         chunk_size: Size of each chunk in characters
         overlap: Number of characters to overlap between chunks
-        
+
     Returns:
         List of text chunks
     """
@@ -161,9 +165,10 @@ def fixed_size_chunking(text: str, chunk_size: int = 500, overlap: int = 50) -> 
         end = start + chunk_size
         chunk = text[start:end]
         chunks.append(chunk)
-        start += (chunk_size - overlap)
+        start += chunk_size - overlap
 
     return chunks
+
 
 # COMMAND ----------
 
@@ -185,18 +190,19 @@ logger.info(fixed_chunks[0][:200] + "...")
 
 # COMMAND ----------
 
+
 def sentence_chunking(text: str, max_sentences: int = 5) -> list[str]:
     """Create chunks based on sentence boundaries.
-    
+
     Args:
         text: Text to chunk
         max_sentences: Maximum sentences per chunk
-        
+
     Returns:
         List of text chunks
     """
     # Simple sentence splitter (can be improved with spaCy/NLTK)
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = re.split(r"(?<=[.!?])\s+", text)
 
     chunks = []
     current_chunk = []
@@ -212,6 +218,7 @@ def sentence_chunking(text: str, max_sentences: int = 5) -> list[str]:
         chunks.append(" ".join(current_chunk))
 
     return chunks
+
 
 # COMMAND ----------
 
