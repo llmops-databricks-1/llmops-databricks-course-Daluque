@@ -16,17 +16,23 @@ w.secrets.put_secret(scope="admin3", key="account_id", string_value=account_id)
 
 # COMMAND ----------
 import base64
+import urllib
+
 import requests
 from databricks.sdk import WorkspaceClient
-from requests.auth import HTTPBasicAuth
-import urllib
 
 w = WorkspaceClient()
 
 # Admin credentials from secret scope (SDK returns base64-encoded values)
-admin_client_id = base64.b64decode(w.secrets.get_secret("admin3", "client_id").value).decode("utf-8")
-admin_client_secret = base64.b64decode(w.secrets.get_secret("admin", "client_secret").value).decode("utf-8")
-account_id = base64.b64decode(w.secrets.get_secret("admin3", "account_id").value).decode("utf-8")
+admin_client_id = base64.b64decode(
+    w.secrets.get_secret("admin3", "client_id").value,
+).decode("utf-8")
+admin_client_secret = base64.b64decode(
+    w.secrets.get_secret("admin", "client_secret").value,
+).decode("utf-8")
+account_id = base64.b64decode(
+    w.secrets.get_secret("admin3", "account_id").value,
+).decode("utf-8")
 
 account_host = "https://accounts.azuredatabricks.net"
 
@@ -53,22 +59,26 @@ secret_resp.raise_for_status()
 client_id = sp.application_id
 client_secret = secret_resp.json()["secret"]
 
+import contextlib
+
 # COMMAND ----------
 # Step 2: Store credentials in a secret scope
 scope_name = "arxiv-agent-scope"
-try:
+with contextlib.suppress(Exception):
     w.secrets.create_scope(scope=scope_name)
-except Exception:
-    pass  # scope already exists
 w.secrets.put_secret(scope=scope_name, key="client_id", string_value=client_id)
 w.secrets.put_secret(scope=scope_name, key="client_secret", string_value=client_secret)
 
 # COMMAND ----------
 # Step 3: Add SPN role to project
-from databricks.sdk.service.postgres import (
-    PostgresAPI, Role, RoleAuthMethod, RoleIdentityType, RoleRoleSpec,
-)
 import psycopg
+from databricks.sdk.service.postgres import (
+    PostgresAPI,
+    Role,
+    RoleAuthMethod,
+    RoleIdentityType,
+    RoleRoleSpec,
+)
 
 project_id = "arxiv-agent-lakebase"
 w = WorkspaceClient()
@@ -91,7 +101,7 @@ pg_api.create_role(
 ).wait()
 
 # COMMAND ----------
-# Step 4: Postgres role SQL 
+# Step 4: Postgres role SQL
 endpoint = next(iter(pg_api.list_endpoints(parent=branch_parent)))
 host = endpoint.status.hosts.host
 pg_credential = pg_api.generate_database_credential(endpoint=endpoint.name)

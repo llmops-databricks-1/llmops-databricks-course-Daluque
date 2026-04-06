@@ -33,7 +33,10 @@ class ProjectConfig(BaseModel):
     )
     experiment_name: str = Field(None, description="Experiment name")
     system_prompt: str = Field(
-        default="You are a helpful AI assistant that helps users find and understand research papers.",
+        default=(
+            "You are a helpful AI assistant that helps"
+            " users find and understand research papers."
+        ),
         description="System prompt for the agent",
     )
 

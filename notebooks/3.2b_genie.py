@@ -17,7 +17,7 @@
 # COMMAND ----------
 from pyspark.sql import SparkSession
 
-from arxiv_curator.config import load_config, get_env
+from arxiv_curator.config import get_env, load_config
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -29,7 +29,7 @@ catalog = cfg.catalog
 schema = cfg.schema
 
 # COMMAND ----------
-cfg
+print(cfg)
 
 # COMMAND ----------
 
@@ -41,6 +41,7 @@ cfg
 # COMMAND ----------
 
 import json
+
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import sql
 from databricks.sdk.service.sql import CreateWarehouseRequestWarehouseType
@@ -49,7 +50,7 @@ from loguru import logger
 w = WorkspaceClient()
 
 # Check if genie_space_id is configured
-if hasattr(cfg, 'genie_space_id') and cfg.genie_space_id:
+if hasattr(cfg, "genie_space_id") and cfg.genie_space_id:
     logger.info(f"Using existing Genie Space from config: {cfg.genie_space_id}")
     space_id = cfg.genie_space_id
     USE_EXISTING_SPACE = True
@@ -153,7 +154,7 @@ else:
 # MAGIC ## 4. Verify Genie Space
 
 # COMMAND ----------
-space_id
+print(space_id)
 
 # COMMAND ----------
 
@@ -171,8 +172,8 @@ logger.info(f"Space config: {json.loads(space.serialized_space)}")
 # COMMAND ----------
 
 conversation = w.genie.start_conversation_and_wait(
-    space_id=space.space_id,
-    content="Find the last 10 papers published")
+    space_id=space.space_id, content="Find the last 10 papers published"
+)
 
 conversation.as_dict()
 
@@ -188,7 +189,8 @@ conversation.as_dict()
 message = w.genie.create_message_and_wait(
     space_id=space.space_id,
     conversation_id=conversation.conversation_id,
-    content="Return the list of authors of the last 10 papers published")
+    content="Return the list of authors of the last 10 papers published",
+)
 
 message.as_dict()
 
