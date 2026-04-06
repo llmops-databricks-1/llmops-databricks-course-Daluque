@@ -18,20 +18,22 @@ class ProjectConfig(BaseModel):
     embedding_endpoint: str = Field(..., description="Embedding endpoint name")
     warehouse_id: str = Field(..., description="Warehouse ID")
     vector_search_endpoint: str = Field(..., description="Vector search endpoint name")
+    genie_space_id: str | None = Field(
+        None, description="Genie space ID for MCP integration"
+    )
     arxiv_query: str = Field(
         "cat:cs.LG AND {{time}}", description="ArXiv query to fetch papers"
     )
     max_pdf_files: int = Field(
         5, description="Maximum number of PDF files to process per query"
     )
+    lakebase_project_id: str = Field(..., description="Lakebase project id")
     genie_space_id: str | None = Field(
         None, description="Genie space ID for MCP integration"
     )
+    experiment_name: str = Field(None, description="Experiment name")
     system_prompt: str = Field(
-        default=(
-            "You are a helpful AI assistant that helps users"
-            " find and understand research papers."
-        ),
+        default="You are a helpful AI assistant that helps users find and understand research papers.",
         description="System prompt for the agent",
     )
 
