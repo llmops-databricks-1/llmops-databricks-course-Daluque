@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    4_4_mlflow_log_register_job:
+      name: 4_4_mlflow_log_register
+      tags:
+        project_name: "arxiv-curator"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: 4_4_mlflow_log_register
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/4.4.mlflow_log_register.py
+            base_parameters:
+              env: ${bundle.target}
+              git_sha: "${var.git_sha}"
+              run_id: "{{job.run_id}}"
