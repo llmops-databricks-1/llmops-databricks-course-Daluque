@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    4_3_evaluation_theory_job:
+      name: 4_3_evaluation_theory
+      tags:
+        project_name: "arxiv-curator"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: 4_3_evaluation_theory
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/4.3.evaluation_theory.py
+            base_parameters:
+              env: ${bundle.target}
+              git_sha: "${var.git_sha}"
+              run_id: "{{job.run_id}}"

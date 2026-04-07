@@ -19,10 +19,8 @@ scope_guideline = Guidelines(
     guidelines=[
         "The response must only discuss topics related to arxiv papers and research",
         "The response should not answer questions about unrelated topics",
-        (
-            "If asked about non-research topics,"
-            " politely redirect to arxiv-related questions"
-        ),
+        "If asked about non-research topics,"
+        " politely redirect to arxiv-related questions",
     ],
     model="databricks:/databricks-gpt-oss-120b",
 )

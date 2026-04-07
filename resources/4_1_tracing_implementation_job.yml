@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    4_1_tracing_implementation_job:
+      name: 4_1_tracing_implementation
+      tags:
+        project_name: "arxiv-curator"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: 4_1_tracing_implementation
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/4.1.tracing_implementation.py
+            base_parameters:
+              env: ${bundle.target}
+              git_sha: "${var.git_sha}"
+              run_id: "{{job.run_id}}"

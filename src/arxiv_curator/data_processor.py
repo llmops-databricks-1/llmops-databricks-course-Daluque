@@ -14,7 +14,7 @@ import json
 import os
 import re
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import arxiv
 from loguru import logger
@@ -56,9 +56,12 @@ class DataProcessor:
         self.schema = config.schema
         self.volume = config.volume
         self.max_pdf_files = config.max_pdf_files
+        self.arxiv_query = config.arxiv_query
 
-        self.start = (datetime.now(UTC) - timedelta(days=5)).strftime("%Y%m%d%H%M")
-        self.end = datetime.now(UTC).strftime("%Y%m%d%H%M")
+        self.start = (datetime.now(timezone.utc) - timedelta(days=5)).strftime(
+            "%Y%m%d%H%M"
+        )
+        self.end = datetime.now(timezone.utc).strftime("%Y%m%d%H%M")
         self.pdf_dir = f"/Volumes/{self.catalog}/{self.schema}/{self.volume}/{self.end}"
         os.makedirs(self.pdf_dir, exist_ok=True)
         self.papers_table = f"{self.catalog}.{self.schema}.arxiv_papers"
@@ -111,8 +114,7 @@ class DataProcessor:
         client = arxiv.Client()
         search = arxiv.Search(
             query=(self.arxiv_query).replace(
-                "{{time}}",
-                f"submittedDate:[{self.start} TO {self.end}]",
+                "{{time}}", f"submittedDate:[{self.start} TO {self.end}]"
             )
         )
         papers = client.results(search)
