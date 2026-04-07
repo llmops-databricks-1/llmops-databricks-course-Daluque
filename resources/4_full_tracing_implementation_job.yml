@@ -32,7 +32,7 @@ resources:
               env: ${bundle.target}
               git_sha: "${var.git_sha}"
               run_id: "{{job.run_id}}"
-        
+
         - task_key: 4_3_evaluation_theory
           depends_on:
             - task_key: 4_2_custom_agent
@@ -43,7 +43,7 @@ resources:
               env: ${bundle.target}
               git_sha: "${var.git_sha}"
               run_id: "{{job.run_id}}"
-        
+
         - task_key: 4_4_mlflow_log_register
           depends_on:
             - task_key: 4_3_evaluation_theory

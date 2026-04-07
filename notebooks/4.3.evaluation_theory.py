@@ -12,23 +12,20 @@
 
 # COMMAND ----------
 
-import mlflow
-from mlflow.genai.judges import make_judge
+import os
 from typing import Literal
+
+import mlflow
+from dotenv import load_dotenv
+from loguru import logger
+from mlflow.genai.judges import make_judge
 from pyspark.sql import SparkSession
 
-from arxiv_curator.config import load_config, get_env
+from arxiv_curator.config import get_env, load_config
 from arxiv_curator.evaluation import (
     polite_tone_guideline,
-    hook_in_post_guideline,
-    scope_guideline,
     word_count_check,
-    mentions_papers
 )
-import os
-from dotenv import load_dotenv
-
-from loguru import logger
 
 # COMMAND ----------
 
@@ -50,7 +47,8 @@ cfg = load_config("../project_config.yml", env)
 # MAGIC %md
 # MAGIC ## 1. Why Evaluation Matters for GenAI
 # MAGIC
-# MAGIC Traditional ML evaluation (accuracy, F1, etc.) doesn't work well for GenAI because:
+# MAGIC Traditional ML evaluation (accuracy, F1, etc.) doesn't
+# MAGIC work well for GenAI because:
 # MAGIC
 # MAGIC ### Challenges:
 # MAGIC - **Open-ended outputs**: No single "correct" answer
@@ -133,13 +131,13 @@ mlflow.set_experiment(cfg.experiment_name)
 
 logger.info("Using Guidelines Scorer from arxiv_curator.evaluation:")
 logger.info(f"  Name: {polite_tone_guideline.name}")
-logger.info(f"  Type: Binary (Pass/Fail)")
+logger.info("  Type: Binary (Pass/Fail)")
 logger.info(f"  Guidelines: {len(polite_tone_guideline.guidelines)} rules")
-logger.info(f"Also available from package:")
-logger.info(f"  - hook_in_post_guideline: Checks for engaging hooks")
-logger.info(f"  - scope_guideline: Ensures responses stay on topic")
-logger.info(f"  - word_count_check: Custom scorer for word count")
-logger.info(f"  - mentions_papers: Checks if response mentions research papers")
+logger.info("Also available from package:")
+logger.info("  - hook_in_post_guideline: Checks for engaging hooks")
+logger.info("  - scope_guideline: Ensures responses stay on topic")
+logger.info("  - word_count_check: Custom scorer for word count")
+logger.info("  - mentions_papers: Checks if response mentions research papers")
 
 # COMMAND ----------
 
@@ -161,10 +159,7 @@ test_data = [
 ]
 
 # Evaluate
-results = mlflow.genai.evaluate(
-    data=test_data,
-    scorers=[polite_tone_guideline]
-)
+results = mlflow.genai.evaluate(data=test_data, scorers=[polite_tone_guideline])
 
 logger.info("Evaluation Results:")
 logger.info("=" * 80)
@@ -181,7 +176,9 @@ display(results)
 quality_judge = make_judge(
     name="response_quality",
     instructions=(
-        "Evaluate the quality of the response in {{ outputs }} to the question in {{ inputs }}. "
+        "Evaluate the quality of the response"
+        " in {{ outputs }} to the question"
+        " in {{ inputs }}. "
         "Score from 1 to 5:\n"
         "1 - Completely unhelpful or incorrect\n"
         "2 - Partially helpful but missing key information\n"
@@ -195,7 +192,7 @@ quality_judge = make_judge(
 
 logger.info("Judge Scorer Created:")
 logger.info(f"  Name: {quality_judge.name}")
-logger.info(f"  Type: Scored (1-5)")
+logger.info("  Type: Scored (1-5)")
 logger.info(f"  Judge Model: {cfg.llm_endpoint}")
 
 # COMMAND ----------
@@ -213,19 +210,21 @@ judge_test_data = [
     },
     {
         "inputs": {"question": "What is machine learning?"},
-        "outputs": "Machine learning is a subset of AI where algorithms learn patterns from data to make predictions or decisions without being explicitly programmed.",
+        "outputs": (
+            "Machine learning is a subset of AI where"
+            " algorithms learn patterns from data to make"
+            " predictions or decisions without being"
+            " explicitly programmed."
+        ),
     },
 ]
 
 # Evaluate
-judge_results = mlflow.genai.evaluate(
-    data=judge_test_data,
-    scorers=[quality_judge]
-)
+judge_results = mlflow.genai.evaluate(data=judge_test_data, scorers=[quality_judge])
 
 logger.info("Judge Evaluation Results:")
 logger.info("=" * 80)
-display(judge_results.tables['eval_results'])
+display(judge_results.tables["eval_results"])
 
 # COMMAND ----------
 
@@ -234,12 +233,14 @@ display(judge_results.tables['eval_results'])
 
 # COMMAND ----------
 
+
 @mlflow.genai.scorer
-def word_count_check(outputs: list) -> bool:
+def local_word_count_check(outputs: list) -> bool:
     """Check that the output is under 350 words."""
     text = outputs[0].get("text", "") if isinstance(outputs[0], dict) else str(outputs[0])
     word_count = len(text.split())
     return word_count < 350
+
 
 @mlflow.genai.scorer
 def has_code_example(outputs: list) -> bool:
@@ -247,12 +248,13 @@ def has_code_example(outputs: list) -> bool:
     text = outputs[0].get("text", "") if isinstance(outputs[0], dict) else str(outputs[0])
     return "```" in text or "python" in text.lower()
 
+
 @mlflow.genai.scorer
 def response_length_score(outputs: list) -> float:
     """Score based on response length (0-1)."""
     text = outputs[0].get("text", "") if isinstance(outputs[0], dict) else str(outputs[0])
     word_count = len(text.split())
-    
+
     # Ideal range: 50-200 words
     if 50 <= word_count <= 200:
         return 1.0
@@ -260,6 +262,7 @@ def response_length_score(outputs: list) -> float:
         return word_count / 50  # Penalize too short
     else:
         return max(0.0, 1.0 - (word_count - 200) / 200)  # Penalize too long
+
 
 logger.info("Custom Scorers Created:")
 logger.info("  1. word_count_check (boolean)")
@@ -276,7 +279,10 @@ logger.info("  3. response_length_score (float 0-1)")
 custom_test_data = [
     {
         "inputs": {"question": "How to use Python?"},
-        "outputs": "Here's how:\n```python\nprint('Hello')\n```\nThis prints Hello to the console.",
+        "outputs": (
+            "Here's how:\n```python\nprint('Hello')\n```"
+            "\nThis prints Hello to the console."
+        ),
     },
     {
         "inputs": {"question": "How to use Python?"},
@@ -287,12 +293,12 @@ custom_test_data = [
 # Evaluate with custom scorers
 custom_results = mlflow.genai.evaluate(
     data=custom_test_data,
-    scorers=[word_count_check, has_code_example, response_length_score]
+    scorers=[local_word_count_check, has_code_example, response_length_score],
 )
 
 logger.info("Custom Scorer Results:")
 logger.info("=" * 80)
-display(custom_results.tables['eval_results'])
+display(custom_results.tables["eval_results"])
 
 # COMMAND ----------
 
@@ -314,7 +320,7 @@ sentiment_judge = make_judge(
 
 logger.info("Categorical Judge Created:")
 logger.info(f"  Name: {sentiment_judge.name}")
-logger.info(f"  Categories: positive, neutral, negative")
+logger.info("  Categories: positive, neutral, negative")
 
 # COMMAND ----------
 
@@ -325,29 +331,33 @@ logger.info(f"  Categories: positive, neutral, negative")
 
 # Combine different types of scorers
 all_scorers = [
-    polite_tone_guideline,      # Binary guideline
-    quality_judge,              # Numeric judge (1-5)
-    word_count_check,           # Boolean custom
-    response_length_score,      # Float custom (0-1)
-    sentiment_judge,            # Categorical judge
+    polite_tone_guideline,  # Binary guideline
+    quality_judge,  # Numeric judge (1-5)
+    word_count_check,  # Boolean custom
+    response_length_score,  # Float custom (0-1)
+    sentiment_judge,  # Categorical judge
 ]
 
 comprehensive_test_data = [
     {
         "inputs": {"question": "Explain transformers"},
-        "outputs": "Transformers are a neural network architecture that uses self-attention mechanisms to process sequential data. They've revolutionized NLP by enabling models like BERT and GPT.",
+        "outputs": (
+            "Transformers are a neural network architecture"
+            " that uses self-attention mechanisms to process"
+            " sequential data. They've revolutionized NLP"
+            " by enabling models like BERT and GPT."
+        ),
     },
 ]
 
 # Evaluate with all scorers
 comprehensive_results = mlflow.genai.evaluate(
-    data=comprehensive_test_data,
-    scorers=all_scorers
+    data=comprehensive_test_data, scorers=all_scorers
 )
 
 logger.info("Comprehensive Evaluation Results:")
 logger.info("=" * 80)
-comprehensive_results
+display(comprehensive_results)
 
 # COMMAND ----------
 
