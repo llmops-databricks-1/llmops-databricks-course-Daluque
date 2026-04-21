@@ -4,10 +4,24 @@ bundle:
 include:
   - resources/*.yml
 
+sync:
+  include:
+    - eval_inputs.txt
+    - project_config.yml
+
 variables:
   git_sha:
     description: "Git SHA of the deployed commit"
     default: "local"
+  branch:
+    description: branch
+    default: main
+  schedule_pause_status:
+    description: schedule pause status
+    default: PAUSED
+  run_as_user:
+    description: "Service Principal ID o User para ejecutar el job"
+    default: "gointegreat.support@gointegreat.com"  # cambiar según target
 
 artifacts:
   default:
@@ -22,3 +36,18 @@ targets:
     workspace:
       host: https://adb-7405618145949592.12.azuredatabricks.net/
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
+  acc:
+    workspace:
+      host: https://adb-7405618145949592.12.azuredatabricks.net/
+      root_path: /Shared/.bundle/${bundle.target}/${bundle.name}
+    variables:
+      schedule_pause_status: PAUSED
+
+  prd:
+    mode: production
+    workspace:
+      host: https://adb-7405618145949592.12.azuredatabricks.net/
+      root_path: /Shared/.bundle/${bundle.target}/${bundle.name}
+    variables:
+      schedule_pause_status: PAUSED # Set to UNPAUSED to enable scheduled runs in production
