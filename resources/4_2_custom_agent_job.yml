@@ -1,0 +1,23 @@
+resources:
+  jobs:
+    4_2_custom_agent_job:
+      name: 4_2_custom_agent
+      tags:
+        project_name: "arxiv-curator"
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - ../dist/*.whl
+
+      tasks:
+        - task_key: 4_2_custom_agent
+          environment_key: default
+          notebook_task:
+            notebook_path: ../notebooks/4.2.custom_agent.py
+            base_parameters:
+              env: ${bundle.target}
+              git_sha: "${var.git_sha}"
+              run_id: "{{job.run_id}}"
